@@ -112,17 +112,10 @@ button {
   letter-spacing: -2.5px;
 }
 
-.ulab-tagline {
-  color: var(--black);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: .12em;
-  line-height: 1.25;
-}
 
 .ulab-description {
-  max-width: 360px;
-  margin-top: 6px;
+  max-width: 390px;
+  margin-top: 8px;
   color: var(--gray-600);
   font-size: 10px;
   line-height: 1.45;
@@ -791,18 +784,14 @@ select:focus,
 
 
 /* =========================================================
-   LOGO nLab — imagen aprobada
+   LOGO nLab — identidad con descriptor integrado
 ========================================================= */
 
 .nlab-image-logo {
-  width: 118px;
+  width: 230px;
   height: auto;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
   display: block;
-}
-
-.nlab-image-logo svg {
-  display: none;
 }
 
 .nlab-logo-img {
@@ -813,17 +802,27 @@ select:focus,
 }
 
 body.is-surveying .nlab-image-logo {
-  width: 84px;
+  width: 145px;
   height: auto;
   margin: 0;
 }
 
 @media (max-width: 700px) {
   .nlab-image-logo {
-    width: 110px;
+    width: 210px;
   }
 
   body.is-surveying .nlab-image-logo {
-    width: 78px;
+    width: 130px;
+  }
+}
+
+@media (max-width: 430px) {
+  .nlab-image-logo {
+    width: 190px;
+  }
+
+  body.is-surveying .nlab-image-logo {
+    width: 120px;
   }
 }

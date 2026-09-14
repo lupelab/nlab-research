@@ -89,3 +89,12 @@ La interfaz utiliza la imagen aprobada en:
 `assets/nlab-logo.png`
 
 Así se conserva exactamente la forma y proporción del wordmark.
+
+
+## Ajuste de identidad nLab
+La imagen `assets/nlab-logo.png` ahora incorpora el descriptor
+“LABORATORIO DE INNOVACIÓN DE LUPE”.
+
+Por ese motivo, la interfaz ya no repite ese texto debajo del logo.
+Solo conserva la descripción:
+“Un espacio para investigar, experimentar y transformar insights en nuevas soluciones.”

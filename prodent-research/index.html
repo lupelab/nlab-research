@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <title>nLab — Hábitos y cuidado bucal</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <main class="app-shell">
+    <section class="survey-card">
+
+      <header id="appHeader" class="topbar">
+        <div class="brand-lockup">
+          <div class="ulab-logo" aria-label="nLab">
+            <svg viewBox="0 0 120 44" role="img" aria-label="nLab">
+              <!-- u invertida para funcionar visualmente como n, bajada 5 px -->
+              <g transform="translate(0 5)">
+                <text
+                  x="1"
+                  y="34"
+                  class="ulab-letter"
+                  transform="rotate(180 13 22)"
+                >u</text>
+              </g>
+
+              <text x="27" y="34" class="ulab-letter">L</text>
+
+              <!-- e invertida / "a" -->
+              <g transform="translate(0 6)">
+                <text
+                  x="53"
+                  y="34"
+                  class="ulab-letter"
+                  transform="rotate(180 65 22)"
+                >e</text>
+              </g>
+
+              <text x="78" y="34" class="ulab-letter">b</text>
+            </svg>
+          </div>
+
+          <div class="brand-copy">
+            <div class="ulab-tagline">LABORATORIO DE INNOVACIÓN DE LUPE</div>
+            <div class="ulab-description">
+              Un espacio para investigar, experimentar y transformar insights en nuevas soluciones.
+            </div>
+          </div>
+        </div>
+
+        <div id="compactProgress" class="compact-progress" hidden>
+          <div class="progress-meta">
+            <span id="sectionProgress">Sección 1 de 9</span>
+            <span id="questionProgress">Pregunta 1 de 24</span>
+          </div>
+
+          <div class="progress-track">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+
+          <div id="saveStatus" class="save-status">
+            <span class="save-dot"></span>
+            Guardado automático
+          </div>
+        </div>
+      </header>
+
+      <div id="survey"></div>
+
+      <footer id="appFooter" class="footer-note">
+        Encuesta anónima. No se solicitan nombre, correo ni datos de contacto.
+      </footer>
+
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

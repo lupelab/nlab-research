@@ -4,6 +4,9 @@ const SPREADSHEET_ID =
 const SHEET_NAME =
   "Respuestas";
 
+const STATUS_PREFIX =
+  "nlab_saved_";
+
 function doGet(e) {
   const action =
     e && e.parameter
@@ -28,27 +31,56 @@ function doGet(e) {
         );
       }
 
-      const ss =
-        SpreadsheetApp.openById(
-          SPREADSHEET_ID
-        );
+      // Ruta rápida: doPost registra el response_id en Script Properties.
+      // Así evitamos abrir y recorrer Google Sheets en cada verificación.
+      const savedMarker =
+        PropertiesService
+          .getScriptProperties()
+          .getProperty(
+            STATUS_PREFIX + responseId
+          );
 
-      const sheet =
-        ss.getSheetByName(
-          SHEET_NAME
-        );
+      if (savedMarker) {
+        result = {
+          ok: true,
+          found: true,
+          response_id: responseId
+        };
+      } else {
+        // Fallback para respuestas antiguas o migradas.
+        const ss =
+          SpreadsheetApp.openById(
+            SPREADSHEET_ID
+          );
 
-      result = {
-        ok: true,
-        found:
+        const sheet =
+          ss.getSheetByName(
+            SHEET_NAME
+          );
+
+        const found =
           sheet
             ? hasResponseId_(
                 sheet,
                 responseId
               )
-            : false,
-        response_id: responseId
-      };
+            : false;
+
+        if (found) {
+          PropertiesService
+            .getScriptProperties()
+            .setProperty(
+              STATUS_PREFIX + responseId,
+              String(Date.now())
+            );
+        }
+
+        result = {
+          ok: true,
+          found: found,
+          response_id: responseId
+        };
+      }
     }
 
     else {
@@ -121,6 +153,13 @@ function doPost(e) {
         payload.response_id
       )
     ) {
+      PropertiesService
+        .getScriptProperties()
+        .setProperty(
+          STATUS_PREFIX + payload.response_id,
+          String(Date.now())
+        );
+
       return respond_({
         ok: true,
         duplicate: true,
@@ -213,6 +252,14 @@ function doPost(e) {
     );
 
     SpreadsheetApp.flush();
+
+    // Marca persistente para que la verificación posterior sea casi inmediata.
+    PropertiesService
+      .getScriptProperties()
+      .setProperty(
+        STATUS_PREFIX + payload.response_id,
+        String(Date.now())
+      );
 
     return respond_({
       ok: true,

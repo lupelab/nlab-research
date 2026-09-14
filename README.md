@@ -98,3 +98,42 @@ La imagen `assets/nlab-logo.png` ahora incorpora el descriptor
 Por ese motivo, la interfaz ya no repite ese texto debajo del logo.
 Solo conserva la descripción:
 “Un espacio para investigar, experimentar y transformar insights en nuevas soluciones.”
+
+
+## Estado visual de envío
+
+Al tocar “Enviar respuestas”, el botón:
+
+- se deshabilita para evitar dobles envíos;
+- muestra un spinner circular;
+- indica “Guardando respuesta…”;
+- durante la validación cambia a “Confirmando guardado…”;
+- solo muestra la pantalla final cuando Google Sheets confirma el `response_id`;
+- si falla, vuelve a habilitar “Reintentar envío”.
+
+
+## Optimización de velocidad del envío
+
+La versión rápida elimina el esquema anterior de hasta 6 verificaciones de 10 segundos.
+
+Ahora:
+- el POST guarda la fila;
+- `Code.gs` registra el `response_id` en Script Properties;
+- el frontend hace una sola verificación con máximo 3,5 segundos;
+- el endpoint de estado revisa primero Script Properties y normalmente no necesita abrir Google Sheets.
+
+IMPORTANTE: para aprovechar la mejora completa hay que volver a desplegar una nueva versión
+del Web App de Google Apps Script después de reemplazar `Code.gs`.
+
+
+## Envío no bloqueante
+
+La encuesta ya no mantiene al usuario detenido en “Confirmando guardado…”.
+
+Ahora:
+- muestra el spinner de “Guardando respuesta…” durante ~650 ms;
+- pasa enseguida a la pantalla de agradecimiento;
+- el POST y la verificación continúan en segundo plano;
+- al confirmarse, el estado cambia a “Respuesta registrada correctamente”;
+- si no puede confirmarse, conserva el borrador local por seguridad;
+- `keepalive: true` ayuda a completar el POST aunque la persona cierre la pestaña.

@@ -826,3 +826,97 @@ body.is-surveying .nlab-image-logo {
     width: 120px;
   }
 }
+
+
+/* =========================================================
+   ESTADO DE ENVÍO / SPINNER
+========================================================= */
+
+.btn.is-loading {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 190px;
+  cursor: wait;
+}
+
+.btn.is-loading:disabled {
+  opacity: 1;
+}
+
+.submit-spinner {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  border: 2px solid rgba(255, 255, 255, .35);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: nlab-spin .75s linear infinite;
+}
+
+@keyframes nlab-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit-spinner {
+    animation: none;
+  }
+}
+
+
+/* =========================================================
+   CONFIRMACIÓN FINAL NO BLOQUEANTE
+========================================================= */
+
+.final-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  max-width: 560px;
+  margin-top: 24px;
+  padding: 10px 13px;
+  border: 1px solid var(--gray-200);
+  border-radius: 999px;
+  color: var(--gray-700);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.final-save-status.is-confirmed {
+  color: var(--black);
+}
+
+.final-save-status.is-unconfirmed {
+  border-radius: 12px;
+  color: var(--gray-700);
+}
+
+.final-mini-spinner {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  border: 2px solid var(--gray-300);
+  border-top-color: var(--black);
+  border-radius: 50%;
+  animation: nlab-spin .75s linear infinite;
+}
+
+.final-status-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .final-mini-spinner {
+    animation: none;
+  }
+}

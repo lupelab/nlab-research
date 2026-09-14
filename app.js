@@ -1489,44 +1489,28 @@ async function verifySavedResponse_(responseId) {
   const statusUrl =
     `${SCRIPT_URL}?action=status&response_id=${encodeURIComponent(responseId)}`;
 
-  let lastError = null;
-
-  for (let attempt = 0; attempt < 6; attempt++) {
-    try {
-      const result =
-        await jsonpRequest_(
-          statusUrl,
-          10000
-        );
-
-      if (
-        result &&
-        result.ok === true &&
-        result.found === true
-      ) {
-        return true;
-      }
-
-      if (
-        result &&
-        result.ok === false
-      ) {
-        throw new Error(
-          result.error ||
-          "Google Sheets devolvió un error."
-        );
-      }
-    } catch (error) {
-      lastError = error;
-    }
-
-    await wait_(
-      700 + attempt * 350
+  const result =
+    await jsonpRequest_(
+      statusUrl,
+      3500
     );
+
+  if (
+    result &&
+    result.ok === true &&
+    result.found === true
+  ) {
+    return true;
   }
 
-  if (lastError) {
-    throw lastError;
+  if (
+    result &&
+    result.ok === false
+  ) {
+    throw new Error(
+      result.error ||
+      "Google Sheets devolvió un error."
+    );
   }
 
   return false;
@@ -1540,8 +1524,12 @@ async function submitSurvey() {
 
   if (button) {
     button.disabled = true;
-    button.textContent =
-      "Guardando…";
+    button.classList.add("is-loading");
+    button.setAttribute("aria-busy", "true");
+    button.innerHTML = `
+      <span class="submit-spinner" aria-hidden="true"></span>
+      <span>Guardando respuesta…</span>
+    `;
   }
 
   const payload = {
@@ -1566,25 +1554,26 @@ async function submitSurvey() {
       )
   };
 
-  try {
-    const body =
-      new URLSearchParams();
+  const body =
+    new URLSearchParams();
 
-    body.set(
-      "payload",
-      JSON.stringify(
-        payload
-      )
-    );
+  body.set(
+    "payload",
+    JSON.stringify(
+      payload
+    )
+  );
 
-    // Apps Script puede no exponer CORS en el POST.
-    // Se envía como no-cors y luego se confirma
-    // por response_id mediante JSONP.
-    await fetch(
+  // Iniciamos el envío y NO bloqueamos al usuario esperando
+  // la verificación. `keepalive` ayuda a terminar el POST
+  // aunque la persona cierre la pestaña después.
+  const sendPromise =
+    fetch(
       SCRIPT_URL,
       {
         method: "POST",
         mode: "no-cors",
+        keepalive: true,
         headers: {
           "Content-Type":
             "application/x-www-form-urlencoded;charset=UTF-8"
@@ -1594,50 +1583,126 @@ async function submitSurvey() {
       }
     );
 
-    if (button) {
-      button.textContent =
-        "Verificando…";
-    }
+  // Dejamos el spinner visible apenas un instante para
+  // dar feedback inmediato y luego pasamos a la pantalla final.
+  await wait_(650);
+
+  showSuccess("pending");
+
+  // La confirmación sigue en segundo plano.
+  void confirmSubmissionInBackground_(
+    sendPromise,
+    state.responseId
+  );
+}
+
+async function confirmSubmissionInBackground_(
+  sendPromise,
+  responseId
+) {
+  try {
+    await sendPromise;
 
     const confirmed =
       await verifySavedResponse_(
-        state.responseId
+        responseId
       );
 
-    if (!confirmed) {
-      throw new Error(
-        "La respuesta no pudo confirmarse en Google Sheets."
+    if (confirmed) {
+      localStorage.removeItem(
+        STORAGE_KEY
       );
+
+      updateFinalSaveStatus_(
+        "confirmed"
+      );
+
+      return;
     }
 
-    localStorage.removeItem(
-      STORAGE_KEY
+    throw new Error(
+      "La respuesta todavía no pudo confirmarse."
     );
-
-    showSuccess();
   }
 
   catch (error) {
-    console.error(
-      "Error al guardar:",
+    console.warn(
+      "Confirmación en segundo plano:",
       error
     );
 
-    if (button) {
-      button.disabled = false;
-      button.textContent =
-        "Reintentar envío";
+    // Segundo intento silencioso. No bloquea la experiencia.
+    await wait_(1800);
+
+    try {
+      const confirmed =
+        await verifySavedResponse_(
+          responseId
+        );
+
+      if (confirmed) {
+        localStorage.removeItem(
+          STORAGE_KEY
+        );
+
+        updateFinalSaveStatus_(
+          "confirmed"
+        );
+
+        return;
+      }
     }
 
-    showError(
-      "No pudimos confirmar el guardado en Google Sheets. " +
-      "Tus respuestas siguen guardadas en este dispositivo. " +
-      "Intentá nuevamente."
+    catch (retryError) {
+      console.warn(
+        "Segundo intento de confirmación:",
+        retryError
+      );
+    }
+
+    // Conservamos el borrador local. Si el POST sí llegó,
+    // el backend detecta duplicados por response_id.
+    updateFinalSaveStatus_(
+      "unconfirmed"
     );
   }
 }
 
-function showSuccess() {
+function updateFinalSaveStatus_(status) {
+  const statusBox =
+    document.getElementById(
+      "finalSaveStatus"
+    );
+
+  if (!statusBox) return;
+
+  if (status === "confirmed") {
+    statusBox.className =
+      "final-save-status is-confirmed";
+
+    statusBox.innerHTML = `
+      <span class="final-status-icon" aria-hidden="true">✓</span>
+      <span>Respuesta registrada correctamente.</span>
+    `;
+
+    return;
+  }
+
+  if (status === "unconfirmed") {
+    statusBox.className =
+      "final-save-status is-unconfirmed";
+
+    statusBox.innerHTML = `
+      <span class="final-status-icon" aria-hidden="true">!</span>
+      <span>
+        El envío sigue procesándose. Tus respuestas permanecen
+        guardadas en este dispositivo por seguridad.
+      </span>
+    `;
+  }
+}
+
+function showSuccess(saveState = "pending") {
   document.body.classList.add("is-surveying");
 
   document.getElementById("sectionProgress").textContent =
@@ -1649,6 +1714,31 @@ function showSuccess() {
   document.getElementById("progressBar").style.width =
     "100%";
 
+  const saveStatusHtml =
+    saveState === "confirmed"
+      ? `
+        <div
+          id="finalSaveStatus"
+          class="final-save-status is-confirmed"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="final-status-icon" aria-hidden="true">✓</span>
+          <span>Respuesta registrada correctamente.</span>
+        </div>
+      `
+      : `
+        <div
+          id="finalSaveStatus"
+          class="final-save-status is-pending"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="final-mini-spinner" aria-hidden="true"></span>
+          <span>Terminando de registrar tu respuesta…</span>
+        </div>
+      `;
+
   document.getElementById("survey").innerHTML = `
     <section class="success-screen">
       <div class="success-icon">✓</div>
@@ -1658,11 +1748,11 @@ function showSuccess() {
       </h2>
 
       <p>
-        Tu respuesta fue registrada de forma anónima.
-        Este estudio nos ayuda a entender mejor cómo evoluciona
-        el cuidado bucal y qué esperan las personas de las marcas
-        de la categoría.
+        Ya podés cerrar esta página. Estamos terminando de registrar
+        tu respuesta de forma anónima en segundo plano.
       </p>
+
+      ${saveStatusHtml}
     </section>
   `;
 

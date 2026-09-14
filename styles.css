@@ -788,3 +788,42 @@ select:focus,
     min-height: 40px;
   }
 }
+
+
+/* =========================================================
+   LOGO nLab — imagen aprobada
+========================================================= */
+
+.nlab-image-logo {
+  width: 118px;
+  height: auto;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.nlab-image-logo svg {
+  display: none;
+}
+
+.nlab-logo-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+body.is-surveying .nlab-image-logo {
+  width: 84px;
+  height: auto;
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .nlab-image-logo {
+    width: 110px;
+  }
+
+  body.is-surveying .nlab-image-logo {
+    width: 78px;
+  }
+}

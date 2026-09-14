@@ -80,3 +80,12 @@ La versión incluye verificación real de guardado:
    `https://script.google.com/macros/s/AKfycbw5WfmCYFJR0rQEDvtrrD_ZUhQJKrcPNRJCAKITcTh7gO-VwcUzM_jHOjW1lxAECF3_sw/exec`
 
 Si cambia la URL `/exec`, reemplazar `SCRIPT_URL` al inicio de `app.js`.
+
+
+## Logo nLab
+El logo ya no se construye con letras rotadas mediante SVG.
+La interfaz utiliza la imagen aprobada en:
+
+`assets/nlab-logo.png`
+
+Así se conserva exactamente la forma y proporción del wordmark.
